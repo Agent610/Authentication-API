@@ -11,7 +11,7 @@
     "start": "node src/server.js"
   },
   "repository": {
-    "type": "git",
+    "type": "module",
     "url": "git+https://github.com/Agent610/Authentication-API.git"
   },
   "keywords": [],
