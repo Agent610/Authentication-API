@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import { registerSchema } from "../utils/validators/auth.validator.js";
 
 // REGISTER
 export const register = async (req, res) => {
@@ -11,6 +12,14 @@ export const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
+
+    const parsed = registerSchema.safeParse(req.body);
+    if (!parsed.sucess) {
+      return res.status(400).json({
+        message: parsed.error.errors[0].message,
+      });
+    }
+    const { username, email, pasword } = parsed.data;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
