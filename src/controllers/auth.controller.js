@@ -8,22 +8,25 @@ import { sendVerificationEmail } from "../services/email.service.js";
 // REGISTER
 export const register = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
-    }
-
     const parsed = registerSchema.safeParse(req.body);
-    if (!parsed.sucess) {
+
+    if (!parsed.success) {
       return res.status(400).json({
         message: parsed.error.errors[0].message,
       });
     }
-    const { username, email, pasword } = parsed.data;
+
+    const { username, email, password } = parsed.data;
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    const verificationToken = crypto.randomBytes(32).toString("hex");
 
     const user = await User.create({
       username,
@@ -32,6 +35,8 @@ export const register = async (req, res) => {
       verificationToken,
     });
 
+    await sendVerificationEmail(email, verificationToken);
+
     res.status(201).json({
       message: "User created successfully",
       user,
@@ -39,9 +44,6 @@ export const register = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-
-  const verificationToken = crypto.randomBytes(32).toString("hex");
-  await sendVerificationEmail(email, verificationToken);
 };
 
 //LOGIN
