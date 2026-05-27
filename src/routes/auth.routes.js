@@ -9,6 +9,7 @@ import { authLimiter } from "../middleware/rateLimit.middleware.js";
 import { sendVerificationEmail } from "../services/email.service.js";
 import { forgotPassword } from "../controllers/auth.controller.js";
 import { resetPassword } from "../controllers/auth.controller.js";
+import { verifyEmail } from "../controllers/auth.controller.js";
 
 const router = express.Router();
 

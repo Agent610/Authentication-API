@@ -138,122 +138,122 @@ export const refreshToken = async (req, res) => {
       { expiresIn: "15m" },
     );
 
-    res.json({ accessToken: newAccessToken });
+    return res.json({ accessToken: newAccessToken });
   } catch (error) {
-    res.status(403).json({ message: "Token expired or invalid" });
+    return res.status(403).json({ message: "Token expired or invalid" });
   }
+};
 
-  //EMAIL ENDPOINT
-  export const verifyEmail = async (req, res) => {
-    try {
-      const { token } = req.params;
+//EMAIL ENDPOINT
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
 
-      const user = await User.findOne({
-        verificationToken: token,
-      });
+    const user = await User.findOne({
+      verificationToken: token,
+    });
 
-      if (!user) {
-        return res.status(400).json({
-          message: "Invalid verification token",
-        });
-      }
-
-      user.isVerified = true;
-      user.verificationToken = null;
-
-      await user.save();
-
-      res.json({
-        message: "Email verified successfully",
-      });
-    } catch (error) {
-      res.status(500).json({
-        message: error.message,
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid verification token",
       });
     }
-  };
 
-  // RESET EMAIL
-  export const sendPasswordResetEmail = async (email, token) => {
-    const resetLink = `http://localhost:5000/reset-password/${token}`;
+    user.isVerified = true;
+    user.verificationToken = null;
 
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Password Reset",
-      html: `
+    await user.save();
+
+    res.json({
+      message: "Email verified successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+// RESET EMAIL
+export const sendPasswordResetEmail = async (email, token) => {
+  const resetLink = `http://localhost:5000/reset-password/${token}`;
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: "Password Reset",
+    html: `
       <h2>Password Reset</h2>
       <p>Click below to reset password:</p>
       <a href="${resetLink}">${resetLink}</a>
     `,
+  });
+};
+
+// FORGOT PASSWORD
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000;
+
+    await user.save();
+
+    await sendPasswordResetEmail(email, resetToken);
+
+    res.json({
+      message: "Password reset email sent",
     });
-  };
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 
-  // FORGOT PASSWORD
-  export const forgotPassword = async (req, res) => {
-    try {
-      const { email } = req.body;
+// RESET PASSWORD
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
 
-      const user = await User.findOne({ email });
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() },
+    });
 
-      if (!user) {
-        return res.status(404).json({
-          message: "User not found",
-        });
-      }
-
-      const resetToken = crypto.randomBytes(32).toString("hex");
-
-      user.resetPasswordToken = resetToken;
-      user.resetPasswordExpires = Date.now() + 3600000;
-
-      await user.save();
-
-      await sendPasswordResetEmail(email, resetToken);
-
-      res.json({
-        message: "Password reset email sent",
-      });
-    } catch (error) {
-      res.status(500).json({
-        message: error.message,
+    if (!user) {
+      return res.status(400).json({
+        message: "Invalid or expired token",
       });
     }
-  };
 
-  // RESET PASSWORD
-  export const resetPassword = async (req, res) => {
-    try {
-      const { token } = req.params;
-      const { password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-      const user = await User.findOne({
-        resetPasswordToken: token,
-        resetPasswordExpires: { $gt: Date.now() },
-      });
+    user.password = hashedPassword;
 
-      if (!user) {
-        return res.status(400).json({
-          message: "Invalid or expired token",
-        });
-      }
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+    await user.save();
 
-      user.password = hashedPassword;
-
-      user.resetPasswordToken = null;
-      user.resetPasswordExpires = null;
-
-      await user.save();
-
-      res.json({
-        message: "Password reset successful",
-      });
-    } catch (error) {
-      res.status(500).json({
-        message: error.message,
-      });
-    }
-  };
+    res.json({
+      message: "Password reset successful",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
 };
