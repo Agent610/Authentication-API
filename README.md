@@ -1,35 +1,83 @@
 # 🔐 Authentication API System
 
-A secure and scalable authentication API built with Node.js, Express, and JWT.  
-This project demonstrates modern backend engineering practices including authentication, authorization, password hashing, and role-based access control.
+A production-style authentication and authorization API built with Node.js, Express, MongoDB, and JWT.
 
----
+This project demonstrates secure backend engineering practices including JWT authentication, refresh token handling, role-based access control, password reset workflows, email verification, rate limiting, and layered backend architecture.
 
-## 🚀 Features
+## Features
 
-- User registration & login
-- JWT authentication (Access + Refresh tokens)
-- Password hashing using bcrypt
-- Role-based access control (User / Admin)
+## Authentication & Authorization
+
+- User registration and login
+- JWT access token authentication
+- Refresh token workflow
+- Secure logout system
 - Protected routes middleware
-- Token refresh mechanism
-- Clean layered architecture (controllers, services, middleware)
-- Environment-based configuration
+- Role-based access control (RBAC)
 
----
+## Security Features
 
-## 🧠 Tech Stack
+- Password hashing with bcrypt
+- HTTP-only refresh token cookies
+- Rate limiting protection
+- Input validation with Zod
+- Secure token verification
+- Environment variable configuration
+
+## User Account Features
+
+- Email verification workflow
+- Forgot password functionality
+- Password reset system
+- User profile endpoint
+
+## Backend Architecture
+
+- Modular MVC-inspired structure
+- Controllers / Services / Middleware separation
+- Centralized environment configuration
+- Reusable utility functions
+- Error handling middleware
+
+## API Documentation
+
+- Swagger/OpenAPI documentation support
+
+## Tech Stack
+
+## Backend
 
 - Node.js
 - Express.js
-- MongoDB / PostgreSQL (choose one)
+
+## Database
+
+- MongoDB
+- Mongoose
+
+## Autentication & Security
+
 - JWT (JSON Web Tokens)
 - bcrypt
+- express-rate-limit
+- cookie-parser
+
+## Validation & Utilities
+
+- Zod
 - dotenv
 
----
+## Email Services
 
-## 📁 Project Structure
+- Nodemailer
+
+## Documentation & Testing
+
+- Swagger UI Express
+- Jest
+- Supertest
+
+## Project Structure
 
 - src -> (config, controllers, middleware, models, routes, services, utils, app.js, server.js)
 - tests -> (auth.test.js)
@@ -38,21 +86,18 @@ This project demonstrates modern backend engineering practices including authent
 - .gitignore
 - README
 
----
+## Authentication Flow
 
-## 🔐 Authentication Flow
-
-1. User registers → password is hashed
-2. User logs in → server validates credentials
-3. Server issues:
+1. User registers an account → password is hashed using bcrypt
+2. Verification email is generated
+3. User logs in → server validates credentials
+4. Server issues:
    - Access Token (short-lived)
    - Refresh Token (long-lived)
-4. Access token used for protected routes
-5. Refresh token used to generate new access token
+5. Access token used for protected routes
+6. Refresh token used to generate new access token
 
----
-
-## 📌 API Endpoints
+## API Endpoints
 
 ### Auth Routes
 
@@ -60,6 +105,9 @@ POST/api/auth/register
 POST/api/auth/login
 POST/api/auth/refresh
 POST/api/auth/logout
+POST/api/forgot-password
+POST/api/reset-password/:token
+GET/api/auth/verify-email/:token
 
 ## User Routes
 
@@ -71,19 +119,17 @@ PUT/api/users/profile
 GET/api/admin/users
 DELETE/api/admin/users/:id
 
----
+## Security Features
 
-## 🔒 Security Features
-
-- Password hashing with bcrypt
-- JWT token-based authentication
-- HTTP-only cookie support (optional upgrade)
+- JWT authentication with refresh token support
+- Password hashing using bcrypt
 - Role-based authorization middleware
-- Input validation (planned)
+- Rate limiting against brute-force attacks
+- HTTP-only cookie handling
+- Validation layer for request protection
+- Secure environment variable management
 
----
-
-## ⚙️ Setup Instructions
+## Setup Instructions
 
 ```bash
 # Clone repo
@@ -97,4 +143,19 @@ cp .env.example .env
 
 # Run server
 npm run dev
+
 ```
+
+## Future Improvements
+
+- OAuth Authentication (Google/GitHub)
+- Docker containerization
+- CI/CD pipeline integration
+- Redis token blacklisting
+- Multi-factor authentication (MFA)
+- Production deployment with Render + MongoDB Atlas
+
+## Author
+
+Devin Bhavsar
+Software Engineer focused on backend development, authentication systems, APIs, and scalable web applications
